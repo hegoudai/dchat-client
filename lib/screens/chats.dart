@@ -24,7 +24,7 @@ class ChatList extends ConsumerWidget {
                 ),
                 // todo change server action
                 PopupMenuItem(
-                  child: Text('Change Server'),
+                  child: Text('Config Server'),
                 ),
                 // todo show my address
                 PopupMenuItem(child: Text('My Address'))
