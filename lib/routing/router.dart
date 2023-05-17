@@ -1,3 +1,4 @@
+import 'package:dchat_client/screens/chat_detail.dart';
 import 'package:dchat_client/screens/chats.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,8 +21,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: ':address',
             parentNavigatorKey: _rootNavigatorKey,
             builder: (BuildContext context, GoRouterState state) {
-              // todo chat details
-              return const Placeholder();
+              return ChatDetail(address: state.pathParameters['address']!);
             },
           ),
         ],

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:basic_utils/basic_utils.dart';
 import 'package:dchat_client/db/prefs.dart';
@@ -8,6 +7,7 @@ import 'package:dchat_client/screens/state.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../db/app_database.dart';
 
@@ -92,20 +92,12 @@ class ChatList extends ConsumerWidget {
                 PopupMenuItem(
                   child: const Text('My Address'),
                   onTap: () {
-                    var server = ref.watch(serverProvider) ?? '';
-                    var ecKeyPair = ref.watch(ecKeyPairProvider);
-                    var ecPub = ecKeyPair.publicKey as ECPublicKey;
-                    var addressMap = {
-                      's': server,
-                      'p': base64Url.encode(ecPub.Q!.getEncoded(false))
-                    };
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       showDialog(
                           context: context,
                           builder: (BuildContext context) =>
                               SimpleDialog(children: [
-                                SelectableText(base64Url
-                                    .encode(jsonEncode(addressMap).codeUnits)),
+                                SelectableText(ref.watch(myAddressProvider)),
                               ]));
                     });
                   },
@@ -164,7 +156,7 @@ class ChatCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
-        // todo route to chat detail
+        GoRouter.of(context).push('/chats/${chat.address}');
       },
       child: Card(
         child: Padding(
@@ -184,7 +176,12 @@ class ChatCard extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.delete),
                 color: Colors.red,
-                onPressed: () {},
+                onPressed: () {
+                  final db = ref.watch(AppDatabase.provider);
+                  (db.delete(db.chats)
+                        ..where((tbl) => tbl.address.equals(chat.address)))
+                      .go();
+                },
               )
             ],
           ),
