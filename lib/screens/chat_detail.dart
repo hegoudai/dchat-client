@@ -45,32 +45,35 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
       ),
       body: messages.when(
         data: (data) {
-          return ListView.builder(
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  padding: const EdgeInsets.only(
-                      left: 14, right: 14, top: 10, bottom: 10),
-                  child: Align(
-                    alignment: (data[index].toAddress != widget.address
-                        ? Alignment.topLeft
-                        : Alignment.topRight),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: (data[index].toAddress != widget.address
-                            ? Colors.grey.shade200
-                            : Colors.blue[200]),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        data[index].content,
-                        style: const TextStyle(fontSize: 15),
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 80.0),
+            child: ListView.builder(
+                itemCount: data.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    padding: const EdgeInsets.only(
+                        left: 14, right: 14, top: 10, bottom: 10),
+                    child: Align(
+                      alignment: (data[index].toAddress != widget.address
+                          ? Alignment.topLeft
+                          : Alignment.topRight),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: (data[index].toAddress != widget.address
+                              ? Colors.grey.shade200
+                              : Colors.blue[200]),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          data[index].content,
+                          style: const TextStyle(fontSize: 15),
+                        ),
                       ),
                     ),
-                  ),
-                );
-              });
+                  );
+                }),
+          );
         },
         error: (e, s) {
           return Text(e.toString());
@@ -80,6 +83,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           child: CircularProgressIndicator(),
         ),
       ),
+      resizeToAvoidBottomInset: true,
       bottomSheet: Material(
         elevation: 12,
         child: SafeArea(
