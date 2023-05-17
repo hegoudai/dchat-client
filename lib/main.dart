@@ -1,9 +1,16 @@
 import 'package:dchat_client/routing/router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const ProviderScope(child: MainApp()));
+import 'db/prefs.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final sharedPreferences = await SharedPreferences.getInstance();
+  runApp(ProviderScope(
+      overrides: [prefsProvider.overrideWithValue(sharedPreferences)],
+      child: const MainApp()));
 }
 
 class MainApp extends ConsumerWidget {

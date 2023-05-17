@@ -17,7 +17,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ChatList(),
         routes: <RouteBase>[
           GoRoute(
-            path: 'details/:address',
+            path: ':address',
             parentNavigatorKey: _rootNavigatorKey,
             builder: (BuildContext context, GoRouterState state) {
               // todo chat details
