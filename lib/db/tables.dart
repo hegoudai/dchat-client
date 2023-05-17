@@ -3,6 +3,9 @@ import 'package:drift/drift.dart';
 @DataClassName('Chat')
 class Chats extends Table {
   TextColumn get address => text()();
+
+  @override
+  Set<Column> get primaryKey => {address};
 }
 
 @DataClassName('Message')

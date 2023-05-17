@@ -303,7 +303,7 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
+  Set<GeneratedColumn> get $primaryKey => {address};
   @override
   Chat map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';

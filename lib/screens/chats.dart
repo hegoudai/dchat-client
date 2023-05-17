@@ -1,14 +1,22 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:typed_data';
 
+import 'package:basic_utils/basic_utils.dart';
+import 'package:dchat_client/db/prefs.dart';
 import 'package:dchat_client/screens/state.dart';
+import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../db/app_database.dart';
 
 class ChatList extends ConsumerWidget {
+  final _serverController = TextEditingController();
+  final _newChatController = TextEditingController();
+
   /// Constructs a [ChatListWithAppBar] widget.
-  const ChatList({super.key});
+  ChatList({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,17 +25,91 @@ class ChatList extends ConsumerWidget {
           title: const Text("Conversations"),
           actions: [
             PopupMenuButton(
-              itemBuilder: (context) => const [
-                // todo new chat action
+              itemBuilder: (context) => [
                 PopupMenuItem(
-                  child: Text('New Chat'),
+                  child: const Text('New Chat'),
+                  onTap: () {
+                    _newChatController.text = '';
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text('New Chat'),
+                          content: TextField(
+                            decoration:
+                                const InputDecoration(labelText: 'Address'),
+                            controller: _newChatController,
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                // todo validate address
+                                final db = ref.watch(AppDatabase.provider);
+                                db.into(db.chats).insert(
+                                    ChatsCompanion.insert(
+                                        address: _newChatController.text),
+                                    mode: InsertMode.insertOrIgnore);
+                                Navigator.pop(context);
+                                // todo route to chat detail
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    });
+                  },
                 ),
-                // todo change server action
                 PopupMenuItem(
-                  child: Text('Config Server'),
-                ),
-                // todo show my address
-                PopupMenuItem(child: Text('My Address'))
+                    child: const Text('Config Server'),
+                    onTap: () {
+                      _serverController.text = ref.watch(serverProvider) ?? '';
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: const Text('Config Server'),
+                            content: TextField(
+                              decoration:
+                                  const InputDecoration(labelText: 'Sever'),
+                              controller: _serverController,
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  ref.watch(prefsProvider).setString(
+                                      'server', _serverController.text);
+                                  ref.invalidate(serverProvider);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      });
+                    }),
+                PopupMenuItem(
+                  child: const Text('My Address'),
+                  onTap: () {
+                    var server = ref.watch(serverProvider) ?? '';
+                    var ecKeyPair = ref.watch(ecKeyPairProvider);
+                    var ecPub = ecKeyPair.publicKey as ECPublicKey;
+                    var addressMap = {
+                      's': server,
+                      'p': base64Url.encode(ecPub.Q!.getEncoded(false))
+                    };
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              SimpleDialog(children: [
+                                SelectableText(base64Url
+                                    .encode(jsonEncode(addressMap).codeUnits)),
+                              ]));
+                    });
+                  },
+                )
               ],
               icon: const Icon(Icons.add_circle),
               tooltip: 'actions',
