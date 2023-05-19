@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:dchat_client/screens/state.dart';
+import 'package:dchat_client/web/api.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,14 +27,18 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   }
 
   void _addToMessages() {
+    // todo check server config first
     if (_controller.text.isNotEmpty) {
       final database = ref.watch(AppDatabase.provider);
       final message = Message(
           content: _controller.text,
           toAddress: widget.address,
-          fromAddress: ref.watch(myAddressProvider));
+          fromAddress: ref.watch(localInfoProvider).myAddress!);
       database.messages.insertOne(message);
-      // todo send message to server
+
+      var toServer = jsonDecode(
+          String.fromCharCodes(base64Url.decode(widget.address)))['s'];
+      ref.watch(apiServicesProvider)!.send(toServer, message);
     }
     _controller.clear();
   }

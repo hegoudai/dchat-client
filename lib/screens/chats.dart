@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:dchat_client/db/prefs.dart';
 import 'package:dchat_client/screens/state.dart';
+import 'package:dchat_client/web/websocket.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,8 @@ class ChatList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // try to connect websocket
+    ref.watch(wsMessageHandler);
     return Scaffold(
         appBar: AppBar(
           title: const Text("Conversations"),
@@ -95,7 +98,9 @@ class ChatList extends ConsumerWidget {
                           context: context,
                           builder: (BuildContext context) =>
                               SimpleDialog(children: [
-                                SelectableText(ref.watch(myAddressProvider)),
+                                SelectableText(
+                                    ref.watch(localInfoProvider).myAddress ??
+                                        ''),
                               ]));
                     });
                   },
@@ -108,10 +113,9 @@ class ChatList extends ConsumerWidget {
         ),
         body: Column(
           children: [
-            const Visibility(
-              // todo watch server state to change visible
-              visible: false,
-              child: Text('Can not connect to server!'),
+            Visibility(
+              visible: !ref.watch(wsStateProvider),
+              child: const Text('Can not connect to server!'),
             ),
             ref.watch(chatsProvider).when(
                   data: (data) {
