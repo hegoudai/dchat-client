@@ -45,11 +45,13 @@ class ChatList extends ConsumerWidget {
                             TextButton(
                               onPressed: () {
                                 // todo validate address
-                                final db = ref.watch(AppDatabase.provider);
-                                db.into(db.chats).insert(
-                                    ChatsCompanion.insert(
-                                        address: _newChatController.text),
-                                    mode: InsertMode.insertOrIgnore);
+                                if (_newChatController.text.isNotEmpty) {
+                                  final db = ref.watch(AppDatabase.provider);
+                                  db.into(db.chats).insert(
+                                      ChatsCompanion.insert(
+                                          address: _newChatController.text),
+                                      mode: InsertMode.insertOrIgnore);
+                                }
                                 Navigator.pop(context);
                                 // todo route to chat detail
                               },
@@ -98,9 +100,9 @@ class ChatList extends ConsumerWidget {
                           context: context,
                           builder: (BuildContext context) =>
                               SimpleDialog(children: [
-                                SelectableText(
-                                    ref.watch(localInfoProvider).myAddress ??
-                                        ''),
+                                SelectableText(ref
+                                    .watch(myAddressInfoProvider)
+                                    .toAddress()),
                               ]));
                     });
                   },

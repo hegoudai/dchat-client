@@ -19,6 +19,7 @@ dependencies:
   basic_utils: ^5.5.4
   http: ^0.13.6
   web_socket_channel: ^2.4.0
+  pointycastle: ^3.7.3
 
 dev_dependencies:
   drift_dev: ^2.8.2

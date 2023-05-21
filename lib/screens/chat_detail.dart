@@ -1,5 +1,5 @@
-import 'dart:convert';
-
+import 'package:dchat_client/models/address_infos.dart';
+import 'package:dchat_client/models/message_encrypted.dart';
 import 'package:dchat_client/screens/state.dart';
 import 'package:dchat_client/web/api.dart';
 import 'package:drift/drift.dart' hide Column;
@@ -33,12 +33,15 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
       final message = Message(
           content: _controller.text,
           toAddress: widget.address,
-          fromAddress: ref.watch(localInfoProvider).myAddress!);
+          fromAddress: ref.watch(myAddressInfoProvider).toAddress());
       database.messages.insertOne(message);
 
-      var toServer = jsonDecode(
-          String.fromCharCodes(base64Url.decode(widget.address)))['s'];
-      ref.watch(apiServicesProvider)!.send(toServer, message);
+      var myAddressInfos = ref.watch(myAddressInfoProvider);
+      var toAddressInfos = AddressInfos.fromAdress(widget.address);
+
+      // send message to server
+      ref.watch(apiServicesProvider)!.send(toAddressInfos.server!,
+          EncryptedMessage.fromMessage(message, myAddressInfos.ecPriv!));
     }
     _controller.clear();
   }
