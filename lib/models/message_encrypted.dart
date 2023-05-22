@@ -50,11 +50,13 @@ class EncryptedMessage extends Message {
     var iv = CryptoUtils.getSecureRandom().nextBytes(16);
     var paddedText = CryptoUtils.addPKCS7Padding(
         Uint8List.fromList(utf8.encode(message.content)), 16);
-    var encryptedContent = aesCbcEncrypt(key, iv, paddedText);
-    var sig = CryptoUtils.ecSignatureToBase64(
-        CryptoUtils.ecSign(ecPriv, CryptoUtils.getHashPlain(encryptedContent)));
+    var encryptedContent = HexUtils.encode(aesCbcEncrypt(key, iv, paddedText));
+    var sig = CryptoUtils.ecSignatureToBase64(CryptoUtils.ecSign(
+        ecPriv,
+        CryptoUtils.getHashPlain(
+            Uint8List.fromList(utf8.encode(encryptedContent)))));
     return EncryptedMessage(
-        content: HexUtils.encode(encryptedContent),
+        content: encryptedContent,
         fromAddress: message.fromAddress,
         toAddress: message.toAddress,
         iv: HexUtils.encode(iv),

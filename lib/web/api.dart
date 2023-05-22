@@ -1,8 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
-import 'package:basic_utils/basic_utils.dart';
 import 'package:dchat_client/models/address_infos.dart';
 import 'package:dchat_client/models/message_encrypted.dart';
 import 'package:dchat_client/screens/state.dart';
@@ -21,15 +18,17 @@ class ApiServices {
   }
 
   Future<String?> login() async {
-    http.Response response =
-        await http.post(Uri.parse('http://${localInfos.server}/login'),
-            body: jsonEncode({
-              'address': localInfos.toAddress(),
-              'signature': CryptoUtils.ecSignatureToBase64(CryptoUtils.ecSign(
-                  localInfos.ecPriv!,
-                  Uint8List.fromList(localInfos.toAddress().codeUnits)))
-            }),
-            headers: {HttpHeaders.contentTypeHeader: 'application/json'});
+    http.Response response = await http.post(
+        Uri.parse('http://${localInfos.server}/login'),
+        // todo better method
+        body: EncryptedMessage(
+                content: 'login',
+                fromAddress: localInfos.toAddress(),
+                toAddress: '',
+                iv: '',
+                signature: '')
+            .toJsonString(),
+        headers: {HttpHeaders.contentTypeHeader: 'application/json'});
     if (response.statusCode == 200) {
       _token = "Bearer ${jsonDecode(response.body)['token']}";
       return _token;
