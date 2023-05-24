@@ -15,7 +15,6 @@ void main() {
 
     var decryptedMessage = String.fromCharCodes(CryptoUtils.removePKCS7Padding(
         aesCbcDecrypt(key, iv, encryptedMessage)));
-    print(decryptedMessage);
     expect(decryptedMessage, equals(message));
   });
 }

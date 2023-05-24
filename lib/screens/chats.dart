@@ -12,6 +12,7 @@ import '../db/app_database.dart';
 
 class ChatList extends ConsumerWidget {
   final _serverController = TextEditingController();
+  final _userInfoController = TextEditingController();
   final _newChatController = TextEditingController();
 
   /// Constructs a [ChatListWithAppBar] widget.
@@ -38,19 +39,23 @@ class ChatList extends ConsumerWidget {
                           title: const Text('New Chat'),
                           content: TextField(
                             decoration:
-                                const InputDecoration(labelText: 'Address'),
+                                const InputDecoration(labelText: 'DCUri'),
                             controller: _newChatController,
                           ),
                           actions: <Widget>[
                             TextButton(
                               onPressed: () {
-                                // todo validate address
                                 if (_newChatController.text.isNotEmpty) {
-                                  final db = ref.watch(AppDatabase.provider);
-                                  db.into(db.chats).insert(
-                                      ChatsCompanion.insert(
-                                          address: _newChatController.text),
-                                      mode: InsertMode.insertOrIgnore);
+                                  var uri =
+                                      Uri.tryParse(_newChatController.text);
+                                  if ((uri != null) & uri!.isScheme('dc')) {
+                                    final db = ref.watch(AppDatabase.provider);
+                                    db.into(db.chats).insert(
+                                        ChatsCompanion.insert(
+                                            pub: uri.pathSegments[0],
+                                            authority: uri.authority),
+                                        mode: InsertMode.insertOrReplace);
+                                  }
                                 }
                                 Navigator.pop(context);
                                 // todo route to chat detail
@@ -64,25 +69,47 @@ class ChatList extends ConsumerWidget {
                   },
                 ),
                 PopupMenuItem(
-                    child: const Text('Config Server'),
+                    child: const Text('User Config'),
                     onTap: () {
-                      _serverController.text = ref.watch(serverProvider) ?? '';
+                      final user = ref.watch(myInfosProvider);
+                      final uri = Uri.tryParse(user.uriString);
+                      if (uri != null) {
+                        _serverController.text =
+                            '${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
+                        _userInfoController.text = uri.userInfo;
+                      } else {}
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         showDialog(
                           context: context,
                           builder: (BuildContext context) => AlertDialog(
-                            title: const Text('Config Server'),
-                            content: TextField(
-                              decoration:
-                                  const InputDecoration(labelText: 'Sever'),
-                              controller: _serverController,
+                            title: const Text('User Config'),
+                            content: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  decoration:
+                                      const InputDecoration(labelText: 'Sever'),
+                                  controller: _serverController,
+                                ),
+                                TextField(
+                                  decoration: const InputDecoration(
+                                      labelText: 'UserInfo'),
+                                  controller: _userInfoController,
+                                ),
+                              ],
                             ),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () {
-                                  ref.watch(prefsProvider).setString(
-                                      'server', _serverController.text);
-                                  ref.invalidate(serverProvider);
+                                  if (_serverController.text.isNotEmpty) {
+                                    var authority =
+                                        '${_userInfoController.text}@${_serverController.text}';
+                                    ref
+                                        .watch(prefsProvider)
+                                        .setString('authority', authority);
+                                    ref.invalidate(myAuthorityProvider);
+                                  }
                                   Navigator.pop(context);
                                 },
                                 child: const Text('OK'),
@@ -100,9 +127,8 @@ class ChatList extends ConsumerWidget {
                           context: context,
                           builder: (BuildContext context) =>
                               SimpleDialog(children: [
-                                SelectableText(ref
-                                    .watch(myAddressInfoProvider)
-                                    .toAddress()),
+                                SelectableText(
+                                    ref.watch(myInfosProvider).uriString),
                               ]));
                     });
                   },
@@ -154,13 +180,14 @@ class ChatList extends ConsumerWidget {
 class ChatCard extends ConsumerWidget {
   final Chat chat;
 
-  ChatCard(this.chat) : super(key: ObjectKey(chat.address));
+  ChatCard(this.chat) : super(key: ObjectKey(chat.pub));
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
-        GoRouter.of(context).push('/chats/${chat.address}');
+        GoRouter.of(context)
+            .push('/chats/${chat.pub}?authority=${chat.authority}');
       },
       child: Card(
         child: Padding(
@@ -173,7 +200,7 @@ class ChatCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(chat.address),
+                    Text(chat.authority),
                   ],
                 ),
               ),
@@ -183,7 +210,7 @@ class ChatCard extends ConsumerWidget {
                 onPressed: () {
                   final db = ref.watch(AppDatabase.provider);
                   (db.delete(db.chats)
-                        ..where((tbl) => tbl.address.equals(chat.address)))
+                        ..where((tbl) => tbl.pub.equals(chat.pub)))
                       .go();
                 },
               )

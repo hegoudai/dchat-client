@@ -1,27 +1,58 @@
+import 'dart:io';
+
+import 'package:dchat_client/db/app_database.dart';
 import 'package:dchat_client/screens/chat_detail.dart';
 import 'package:dchat_client/screens/chats.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uni_links/uni_links.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
+
+final deepLinkProvider = StreamProvider<Uri?>((ref) {
+  if (!kIsWeb) {
+    if (Platform.isAndroid | Platform.isIOS) {
+      // deep link only supported android and ios
+      return uriLinkStream;
+    }
+  }
+  return const Stream.empty();
+});
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/chats',
     debugLogDiagnostics: true,
+    redirect: (context, state) {
+      final dlUri = ref.watch(deepLinkProvider).value;
+      if (dlUri == null) {
+        return null;
+      }
+
+      // handle dlUri
+      final db = ref.watch(AppDatabase.provider);
+      db.into(db.chats).insert(ChatsCompanion.insert(
+          pub: dlUri.pathSegments[0], authority: dlUri.authority));
+      return '/chats/${dlUri.pathSegments[0]}?authority=${dlUri.authority}';
+    },
     routes: <RouteBase>[
       GoRoute(
         path: '/chats',
         builder: (context, state) => ChatList(),
         routes: <RouteBase>[
           GoRoute(
-            path: ':address',
+            path: ':pub',
             parentNavigatorKey: _rootNavigatorKey,
             builder: (BuildContext context, GoRouterState state) {
-              return ChatDetail(address: state.pathParameters['address']!);
+              return ChatDetail(
+                chat: Chat(
+                    pub: state.pathParameters['pub']!,
+                    authority: state.queryParameters['authority']!),
+              );
             },
           ),
         ],

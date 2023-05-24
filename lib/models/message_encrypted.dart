@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:basic_utils/basic_utils.dart';
-import 'package:dchat_client/models/address_infos.dart';
+import 'package:dchat_client/models/dchat_user.dart';
 import 'package:drift/drift.dart';
 
 import '../db/app_database.dart';
@@ -10,20 +10,23 @@ import '../utils/crypto_utils.dart';
 class EncryptedMessage extends Message {
   String iv;
   String signature;
+  String authority;
   EncryptedMessage(
       {required super.content,
-      required super.fromAddress,
-      required super.toAddress,
+      required super.fromPub,
+      required super.toPub,
       required this.iv,
-      required this.signature});
+      required this.signature,
+      required this.authority});
 
   factory EncryptedMessage.fromJson(Map<String, dynamic> json) {
     return EncryptedMessage(
         content: json['content'],
-        fromAddress: json['fromAddress'],
-        toAddress: json['toAddress'],
+        fromPub: json['fromPub'],
+        toPub: json['toPub'],
         iv: json['iv'],
-        signature: json['signature']);
+        signature: json['signature'],
+        authority: json['authority']);
   }
 
   @override
@@ -31,18 +34,19 @@ class EncryptedMessage extends Message {
       <String, dynamic>{
         'content': content,
         'createDate': createDate,
-        'fromAddress': fromAddress,
-        'toAddress': toAddress,
+        'fromPub': fromPub,
+        'toPub': toPub,
         'iv': iv,
-        'signature': signature
+        'signature': signature,
+        'authority': authority
       };
 
   // encrypt message
-  factory EncryptedMessage.fromMessage(Message message, ECPrivateKey ecPriv) {
-    var toInfos = AddressInfos.fromAdress(message.toAddress);
+  factory EncryptedMessage.fromMessage(Message message, DChatUser user) {
+    var ecPub = ecPubFromBytes(base64Url.decode(message.toPub));
     // todo extract this to some other place
     var sessionKey =
-        (ECDHBasicAgreement()..init(ecPriv)).calculateAgreement(toInfos.ecPub);
+        (ECDHBasicAgreement()..init(user.ecPriv)).calculateAgreement(ecPub);
     // key derive from ecdh
     var key = CryptoUtils.getHashPlain(
         Uint8List.fromList(sessionKey.toRadixString(16).codeUnits));
@@ -52,28 +56,27 @@ class EncryptedMessage extends Message {
         Uint8List.fromList(utf8.encode(message.content)), 16);
     var encryptedContent = HexUtils.encode(aesCbcEncrypt(key, iv, paddedText));
     var sig = CryptoUtils.ecSignatureToBase64(CryptoUtils.ecSign(
-        ecPriv,
+        user.ecPriv,
         CryptoUtils.getHashPlain(
             Uint8List.fromList(utf8.encode(encryptedContent)))));
     return EncryptedMessage(
         content: encryptedContent,
-        fromAddress: message.fromAddress,
-        toAddress: message.toAddress,
+        fromPub: message.fromPub,
+        toPub: message.toPub,
         iv: HexUtils.encode(iv),
-        signature: sig);
+        signature: sig,
+        authority: user.authority!);
   }
 
   // decrypt message
   Message toMessage(ECPrivateKey ecPriv) {
-    var fromInfos = AddressInfos.fromAdress(fromAddress);
     var sessionKey = (ECDHBasicAgreement()..init(ecPriv))
-        .calculateAgreement(fromInfos.ecPub);
+        .calculateAgreement(ecPubFromBytes(base64Url.decode(fromPub)));
     var key = CryptoUtils.getHashPlain(
         Uint8List.fromList(sessionKey.toRadixString(16).codeUnits));
     var ivBytes = HexUtils.decode(iv);
     var rawContent = utf8.decode(CryptoUtils.removePKCS7Padding(
         aesCbcDecrypt(key, ivBytes, HexUtils.decode(content))));
-    return Message(
-        content: rawContent, fromAddress: fromAddress, toAddress: toAddress);
+    return Message(content: rawContent, fromPub: fromPub, toPub: toPub);
   }
 }

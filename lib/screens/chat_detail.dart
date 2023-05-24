@@ -1,4 +1,3 @@
-import 'package:dchat_client/models/address_infos.dart';
 import 'package:dchat_client/models/message_encrypted.dart';
 import 'package:dchat_client/screens/state.dart';
 import 'package:dchat_client/web/api.dart';
@@ -9,9 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../db/app_database.dart';
 
 class ChatDetail extends ConsumerStatefulWidget {
-  const ChatDetail({required this.address, super.key});
+  const ChatDetail({required this.chat, super.key});
 
-  final String address;
+  final Chat chat;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ChatDetailState();
@@ -32,26 +31,25 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
       final database = ref.watch(AppDatabase.provider);
       final message = Message(
           content: _controller.text,
-          toAddress: widget.address,
-          fromAddress: ref.watch(myAddressInfoProvider).toAddress());
+          toPub: widget.chat.pub,
+          fromPub: ref.watch(myInfosProvider).ecPubString);
       database.messages.insertOne(message);
 
-      var myAddressInfos = ref.watch(myAddressInfoProvider);
-      var toAddressInfos = AddressInfos.fromAdress(widget.address);
+      var myAddressInfos = ref.watch(myInfosProvider);
 
       // send message to server
-      ref.watch(apiServicesProvider)!.send(toAddressInfos.server!,
-          EncryptedMessage.fromMessage(message, myAddressInfos.ecPriv!));
+      ref.watch(apiServicesProvider)?.send(widget.chat.authority,
+          EncryptedMessage.fromMessage(message, myAddressInfos));
     }
     _controller.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    final messages = ref.watch(messagesProvider(widget.address));
+    final messages = ref.watch(messagesProvider(widget.chat.pub));
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.address),
+        title: Text(widget.chat.authority),
       ),
       body: messages.when(
         data: (data) {
@@ -64,13 +62,13 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                     padding: const EdgeInsets.only(
                         left: 14, right: 14, top: 10, bottom: 10),
                     child: Align(
-                      alignment: (data[index].toAddress != widget.address
+                      alignment: (data[index].toPub != widget.chat.pub
                           ? Alignment.topLeft
                           : Alignment.topRight),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          color: (data[index].toAddress != widget.address
+                          color: (data[index].toPub != widget.chat.pub
                               ? Colors.grey.shade200
                               : Colors.blue[200]),
                         ),

@@ -47,5 +47,19 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!--Not tested, this page may help: https://pub.dev/packages/uni_links-->
+	<key>CFBundleURLTypes</key>
+	<array>
+	<dict>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>CFBundleURLName</key>
+		<string>[ANY_URL_NAME]</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>dc</string>
+		</array>
+	</dict>
+	</array>
 </dict>
 </plist>

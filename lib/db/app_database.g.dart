@@ -20,21 +20,19 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
   late final GeneratedColumn<DateTime> createDate = GeneratedColumn<DateTime>(
       'create_date', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const VerificationMeta _fromAddressMeta =
-      const VerificationMeta('fromAddress');
+  static const VerificationMeta _fromPubMeta =
+      const VerificationMeta('fromPub');
   @override
-  late final GeneratedColumn<String> fromAddress = GeneratedColumn<String>(
-      'from_address', aliasedName, false,
+  late final GeneratedColumn<String> fromPub = GeneratedColumn<String>(
+      'from_pub', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _toAddressMeta =
-      const VerificationMeta('toAddress');
+  static const VerificationMeta _toPubMeta = const VerificationMeta('toPub');
   @override
-  late final GeneratedColumn<String> toAddress = GeneratedColumn<String>(
-      'to_address', aliasedName, false,
+  late final GeneratedColumn<String> toPub = GeneratedColumn<String>(
+      'to_pub', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns =>
-      [content, createDate, fromAddress, toAddress];
+  List<GeneratedColumn> get $columns => [content, createDate, fromPub, toPub];
   @override
   String get aliasedName => _alias ?? 'messages';
   @override
@@ -56,19 +54,17 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
           createDate.isAcceptableOrUnknown(
               data['create_date']!, _createDateMeta));
     }
-    if (data.containsKey('from_address')) {
-      context.handle(
-          _fromAddressMeta,
-          fromAddress.isAcceptableOrUnknown(
-              data['from_address']!, _fromAddressMeta));
+    if (data.containsKey('from_pub')) {
+      context.handle(_fromPubMeta,
+          fromPub.isAcceptableOrUnknown(data['from_pub']!, _fromPubMeta));
     } else if (isInserting) {
-      context.missing(_fromAddressMeta);
+      context.missing(_fromPubMeta);
     }
-    if (data.containsKey('to_address')) {
-      context.handle(_toAddressMeta,
-          toAddress.isAcceptableOrUnknown(data['to_address']!, _toAddressMeta));
+    if (data.containsKey('to_pub')) {
+      context.handle(
+          _toPubMeta, toPub.isAcceptableOrUnknown(data['to_pub']!, _toPubMeta));
     } else if (isInserting) {
-      context.missing(_toAddressMeta);
+      context.missing(_toPubMeta);
     }
     return context;
   }
@@ -83,10 +79,10 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
           .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
       createDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}create_date']),
-      fromAddress: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}from_address'])!,
-      toAddress: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}to_address'])!,
+      fromPub: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}from_pub'])!,
+      toPub: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}to_pub'])!,
     );
   }
 
@@ -99,13 +95,13 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
 class Message extends DataClass implements Insertable<Message> {
   final String content;
   final DateTime? createDate;
-  final String fromAddress;
-  final String toAddress;
+  final String fromPub;
+  final String toPub;
   const Message(
       {required this.content,
       this.createDate,
-      required this.fromAddress,
-      required this.toAddress});
+      required this.fromPub,
+      required this.toPub});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -113,8 +109,8 @@ class Message extends DataClass implements Insertable<Message> {
     if (!nullToAbsent || createDate != null) {
       map['create_date'] = Variable<DateTime>(createDate);
     }
-    map['from_address'] = Variable<String>(fromAddress);
-    map['to_address'] = Variable<String>(toAddress);
+    map['from_pub'] = Variable<String>(fromPub);
+    map['to_pub'] = Variable<String>(toPub);
     return map;
   }
 
@@ -124,8 +120,8 @@ class Message extends DataClass implements Insertable<Message> {
       createDate: createDate == null && nullToAbsent
           ? const Value.absent()
           : Value(createDate),
-      fromAddress: Value(fromAddress),
-      toAddress: Value(toAddress),
+      fromPub: Value(fromPub),
+      toPub: Value(toPub),
     );
   }
 
@@ -135,8 +131,8 @@ class Message extends DataClass implements Insertable<Message> {
     return Message(
       content: serializer.fromJson<String>(json['content']),
       createDate: serializer.fromJson<DateTime?>(json['createDate']),
-      fromAddress: serializer.fromJson<String>(json['fromAddress']),
-      toAddress: serializer.fromJson<String>(json['toAddress']),
+      fromPub: serializer.fromJson<String>(json['fromPub']),
+      toPub: serializer.fromJson<String>(json['toPub']),
     );
   }
   @override
@@ -145,79 +141,79 @@ class Message extends DataClass implements Insertable<Message> {
     return <String, dynamic>{
       'content': serializer.toJson<String>(content),
       'createDate': serializer.toJson<DateTime?>(createDate),
-      'fromAddress': serializer.toJson<String>(fromAddress),
-      'toAddress': serializer.toJson<String>(toAddress),
+      'fromPub': serializer.toJson<String>(fromPub),
+      'toPub': serializer.toJson<String>(toPub),
     };
   }
 
   Message copyWith(
           {String? content,
           Value<DateTime?> createDate = const Value.absent(),
-          String? fromAddress,
-          String? toAddress}) =>
+          String? fromPub,
+          String? toPub}) =>
       Message(
         content: content ?? this.content,
         createDate: createDate.present ? createDate.value : this.createDate,
-        fromAddress: fromAddress ?? this.fromAddress,
-        toAddress: toAddress ?? this.toAddress,
+        fromPub: fromPub ?? this.fromPub,
+        toPub: toPub ?? this.toPub,
       );
   @override
   String toString() {
     return (StringBuffer('Message(')
           ..write('content: $content, ')
           ..write('createDate: $createDate, ')
-          ..write('fromAddress: $fromAddress, ')
-          ..write('toAddress: $toAddress')
+          ..write('fromPub: $fromPub, ')
+          ..write('toPub: $toPub')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(content, createDate, fromAddress, toAddress);
+  int get hashCode => Object.hash(content, createDate, fromPub, toPub);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Message &&
           other.content == this.content &&
           other.createDate == this.createDate &&
-          other.fromAddress == this.fromAddress &&
-          other.toAddress == this.toAddress);
+          other.fromPub == this.fromPub &&
+          other.toPub == this.toPub);
 }
 
 class MessagesCompanion extends UpdateCompanion<Message> {
   final Value<String> content;
   final Value<DateTime?> createDate;
-  final Value<String> fromAddress;
-  final Value<String> toAddress;
+  final Value<String> fromPub;
+  final Value<String> toPub;
   final Value<int> rowid;
   const MessagesCompanion({
     this.content = const Value.absent(),
     this.createDate = const Value.absent(),
-    this.fromAddress = const Value.absent(),
-    this.toAddress = const Value.absent(),
+    this.fromPub = const Value.absent(),
+    this.toPub = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MessagesCompanion.insert({
     required String content,
     this.createDate = const Value.absent(),
-    required String fromAddress,
-    required String toAddress,
+    required String fromPub,
+    required String toPub,
     this.rowid = const Value.absent(),
   })  : content = Value(content),
-        fromAddress = Value(fromAddress),
-        toAddress = Value(toAddress);
+        fromPub = Value(fromPub),
+        toPub = Value(toPub);
   static Insertable<Message> custom({
     Expression<String>? content,
     Expression<DateTime>? createDate,
-    Expression<String>? fromAddress,
-    Expression<String>? toAddress,
+    Expression<String>? fromPub,
+    Expression<String>? toPub,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (content != null) 'content': content,
       if (createDate != null) 'create_date': createDate,
-      if (fromAddress != null) 'from_address': fromAddress,
-      if (toAddress != null) 'to_address': toAddress,
+      if (fromPub != null) 'from_pub': fromPub,
+      if (toPub != null) 'to_pub': toPub,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -225,14 +221,14 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   MessagesCompanion copyWith(
       {Value<String>? content,
       Value<DateTime?>? createDate,
-      Value<String>? fromAddress,
-      Value<String>? toAddress,
+      Value<String>? fromPub,
+      Value<String>? toPub,
       Value<int>? rowid}) {
     return MessagesCompanion(
       content: content ?? this.content,
       createDate: createDate ?? this.createDate,
-      fromAddress: fromAddress ?? this.fromAddress,
-      toAddress: toAddress ?? this.toAddress,
+      fromPub: fromPub ?? this.fromPub,
+      toPub: toPub ?? this.toPub,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -246,11 +242,11 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     if (createDate.present) {
       map['create_date'] = Variable<DateTime>(createDate.value);
     }
-    if (fromAddress.present) {
-      map['from_address'] = Variable<String>(fromAddress.value);
+    if (fromPub.present) {
+      map['from_pub'] = Variable<String>(fromPub.value);
     }
-    if (toAddress.present) {
-      map['to_address'] = Variable<String>(toAddress.value);
+    if (toPub.present) {
+      map['to_pub'] = Variable<String>(toPub.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -263,8 +259,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     return (StringBuffer('MessagesCompanion(')
           ..write('content: $content, ')
           ..write('createDate: $createDate, ')
-          ..write('fromAddress: $fromAddress, ')
-          ..write('toAddress: $toAddress, ')
+          ..write('fromPub: $fromPub, ')
+          ..write('toPub: $toPub, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -276,14 +272,19 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $ChatsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _addressMeta =
-      const VerificationMeta('address');
+  static const VerificationMeta _pubMeta = const VerificationMeta('pub');
   @override
-  late final GeneratedColumn<String> address = GeneratedColumn<String>(
-      'address', aliasedName, false,
+  late final GeneratedColumn<String> pub = GeneratedColumn<String>(
+      'pub', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _authorityMeta =
+      const VerificationMeta('authority');
+  @override
+  late final GeneratedColumn<String> authority = GeneratedColumn<String>(
+      'authority', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [address];
+  List<GeneratedColumn> get $columns => [pub, authority];
   @override
   String get aliasedName => _alias ?? 'chats';
   @override
@@ -293,23 +294,31 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('address')) {
-      context.handle(_addressMeta,
-          address.isAcceptableOrUnknown(data['address']!, _addressMeta));
+    if (data.containsKey('pub')) {
+      context.handle(
+          _pubMeta, pub.isAcceptableOrUnknown(data['pub']!, _pubMeta));
     } else if (isInserting) {
-      context.missing(_addressMeta);
+      context.missing(_pubMeta);
+    }
+    if (data.containsKey('authority')) {
+      context.handle(_authorityMeta,
+          authority.isAcceptableOrUnknown(data['authority']!, _authorityMeta));
+    } else if (isInserting) {
+      context.missing(_authorityMeta);
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {address};
+  Set<GeneratedColumn> get $primaryKey => {pub};
   @override
   Chat map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Chat(
-      address: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}address'])!,
+      pub: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}pub'])!,
+      authority: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}authority'])!,
     );
   }
 
@@ -320,18 +329,21 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
 }
 
 class Chat extends DataClass implements Insertable<Chat> {
-  final String address;
-  const Chat({required this.address});
+  final String pub;
+  final String authority;
+  const Chat({required this.pub, required this.authority});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['address'] = Variable<String>(address);
+    map['pub'] = Variable<String>(pub);
+    map['authority'] = Variable<String>(authority);
     return map;
   }
 
   ChatsCompanion toCompanion(bool nullToAbsent) {
     return ChatsCompanion(
-      address: Value(address),
+      pub: Value(pub),
+      authority: Value(authority),
     );
   }
 
@@ -339,60 +351,74 @@ class Chat extends DataClass implements Insertable<Chat> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Chat(
-      address: serializer.fromJson<String>(json['address']),
+      pub: serializer.fromJson<String>(json['pub']),
+      authority: serializer.fromJson<String>(json['authority']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'address': serializer.toJson<String>(address),
+      'pub': serializer.toJson<String>(pub),
+      'authority': serializer.toJson<String>(authority),
     };
   }
 
-  Chat copyWith({String? address}) => Chat(
-        address: address ?? this.address,
+  Chat copyWith({String? pub, String? authority}) => Chat(
+        pub: pub ?? this.pub,
+        authority: authority ?? this.authority,
       );
   @override
   String toString() {
     return (StringBuffer('Chat(')
-          ..write('address: $address')
+          ..write('pub: $pub, ')
+          ..write('authority: $authority')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => address.hashCode;
+  int get hashCode => Object.hash(pub, authority);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Chat && other.address == this.address);
+      (other is Chat &&
+          other.pub == this.pub &&
+          other.authority == this.authority);
 }
 
 class ChatsCompanion extends UpdateCompanion<Chat> {
-  final Value<String> address;
+  final Value<String> pub;
+  final Value<String> authority;
   final Value<int> rowid;
   const ChatsCompanion({
-    this.address = const Value.absent(),
+    this.pub = const Value.absent(),
+    this.authority = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ChatsCompanion.insert({
-    required String address,
+    required String pub,
+    required String authority,
     this.rowid = const Value.absent(),
-  }) : address = Value(address);
+  })  : pub = Value(pub),
+        authority = Value(authority);
   static Insertable<Chat> custom({
-    Expression<String>? address,
+    Expression<String>? pub,
+    Expression<String>? authority,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (address != null) 'address': address,
+      if (pub != null) 'pub': pub,
+      if (authority != null) 'authority': authority,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  ChatsCompanion copyWith({Value<String>? address, Value<int>? rowid}) {
+  ChatsCompanion copyWith(
+      {Value<String>? pub, Value<String>? authority, Value<int>? rowid}) {
     return ChatsCompanion(
-      address: address ?? this.address,
+      pub: pub ?? this.pub,
+      authority: authority ?? this.authority,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -400,8 +426,11 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (address.present) {
-      map['address'] = Variable<String>(address.value);
+    if (pub.present) {
+      map['pub'] = Variable<String>(pub.value);
+    }
+    if (authority.present) {
+      map['authority'] = Variable<String>(authority.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -412,7 +441,8 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
   @override
   String toString() {
     return (StringBuffer('ChatsCompanion(')
-          ..write('address: $address, ')
+          ..write('pub: $pub, ')
+          ..write('authority: $authority, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();

@@ -2,16 +2,17 @@ import 'package:drift/drift.dart';
 
 @DataClassName('Chat')
 class Chats extends Table {
-  TextColumn get address => text()();
+  TextColumn get pub => text()();
+  TextColumn get authority => text()();
 
   @override
-  Set<Column> get primaryKey => {address};
+  Set<Column> get primaryKey => {pub};
 }
 
 @DataClassName('Message')
 class Messages extends Table {
   TextColumn get content => text()();
   DateTimeColumn get createDate => dateTime().nullable()();
-  TextColumn get fromAddress => text()();
-  TextColumn get toAddress => text()();
+  TextColumn get fromPub => text()();
+  TextColumn get toPub => text()();
 }

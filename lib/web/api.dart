@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:dchat_client/models/address_infos.dart';
+import 'package:dchat_client/models/dchat_user.dart';
 import 'package:dchat_client/models/message_encrypted.dart';
 import 'package:dchat_client/screens/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,9 +9,14 @@ import 'package:http/http.dart' as http;
 class ApiServices {
   String? _token;
 
-  AddressInfos localInfos;
+  DChatUser user;
 
-  ApiServices(this.localInfos);
+  ApiServices(this.user);
+
+  // api header
+  Map<String, String> commonHeader = {
+    HttpHeaders.contentTypeHeader: 'application/json'
+  };
 
   Future<String?> get token async {
     return _token ?? await login();
@@ -19,16 +24,17 @@ class ApiServices {
 
   Future<String?> login() async {
     http.Response response = await http.post(
-        Uri.parse('http://${localInfos.server}/login'),
+        Uri.parse('http://${user.authority}/login'),
         // todo better method
         body: EncryptedMessage(
                 content: 'login',
-                fromAddress: localInfos.toAddress(),
-                toAddress: '',
+                fromPub: user.ecPubString,
+                toPub: '',
                 iv: '',
-                signature: '')
+                signature: '',
+                authority: '')
             .toJsonString(),
-        headers: {HttpHeaders.contentTypeHeader: 'application/json'});
+        headers: commonHeader);
     if (response.statusCode == 200) {
       _token = "Bearer ${jsonDecode(response.body)['token']}";
       return _token;
@@ -40,12 +46,14 @@ class ApiServices {
   Future<http.Response> send(String toServer, EncryptedMessage message) async {
     // todo encrypt the message and add signature
     return await http.post(Uri.parse('http://$toServer/message/send'),
-        body: message.toJsonString(),
-        headers: {HttpHeaders.contentTypeHeader: 'application/json'});
+        body: message.toJsonString(), headers: commonHeader);
   }
 }
 
 final apiServicesProvider = Provider<ApiServices?>((ref) {
-  final localInfos = ref.watch(myAddressInfoProvider);
-  return ApiServices(localInfos);
+  final user = ref.watch(myInfosProvider);
+  if (user.authority == null) {
+    return null;
+  }
+  return ApiServices(user);
 });

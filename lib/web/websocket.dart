@@ -20,7 +20,7 @@ final wsMessageHandler = Provider<void>((ref) async {
   final token = await api.token;
   // open the connection
   final channel = WebSocketChannel.connect(
-      Uri.parse('ws://${api.localInfos.server}/chat?token=$token'));
+      Uri.parse('ws://${api.user.authority}/chat?token=$token'));
 
   // change ws state when ready
   channel.ready
@@ -38,16 +38,17 @@ final wsMessageHandler = Provider<void>((ref) async {
       final encryptedMessage = EncryptedMessage.fromJson(jsonDecode(value));
       final database = ref.watch(AppDatabase.provider);
 
-      final chat = Chat(address: encryptedMessage.fromAddress);
+      final chat = Chat(
+          pub: encryptedMessage.fromPub, authority: encryptedMessage.authority);
 
-      var myAddressInfos = ref.watch(myAddressInfoProvider);
+      var myAddressInfos = ref.watch(myInfosProvider);
 
       database
           .into(database.chats)
           .insert(chat, mode: InsertMode.insertOrIgnore);
       database
           .into(database.messages)
-          .insert(encryptedMessage.toMessage(myAddressInfos.ecPriv!));
+          .insert(encryptedMessage.toMessage(myAddressInfos.ecPriv));
     },
     onError: (e) {
       log('error while listening ws: $e');
