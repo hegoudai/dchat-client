@@ -120,7 +120,7 @@ class ChatList extends ConsumerWidget {
                       });
                     }),
                 PopupMenuItem(
-                  child: const Text('My Address'),
+                  child: const Text('My URI'),
                   onTap: () {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       showDialog(
