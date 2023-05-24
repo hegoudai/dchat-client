@@ -1,8 +1,5 @@
 # dchat_client
-A decentralized multiplatform (only web and android tested) chat client using ECDH to transfer message. 
-
-## dchat_server
-This client needs to connect the dchat_server to recieve message from others. You can deploy your own server or find some servers exposed by some friendly guys on the internet.If you are interested in the server, see the server repository.
+A decentralized multiplatform (only web and android tested) chat client using ECDH to transfer message. To use this client, a deployed dchat server instance is needed. If you are interested in the server, see [server repository](https://github.com/hegoudai/dchat_server).
 
 
 ## dchat URI
