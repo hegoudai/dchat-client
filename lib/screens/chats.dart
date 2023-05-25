@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:dchat_client/db/prefs.dart';
@@ -22,6 +23,12 @@ class ChatList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // try to connect websocket
     ref.watch(wsMessageHandler);
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      // try to reconnect ws every five seconds
+      if (!ref.watch(wsStateProvider)) {
+        ref.invalidate(wsMessageHandler);
+      }
+    });
     return Scaffold(
         appBar: AppBar(
           title: const Text("Conversations"),
