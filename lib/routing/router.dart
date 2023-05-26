@@ -46,7 +46,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: <RouteBase>[
       GoRoute(
         path: '/chats',
-        builder: (context, state) => ChatList(),
+        builder: (context, state) => const Chats(),
         routes: <RouteBase>[
           GoRoute(
             path: ':pub',

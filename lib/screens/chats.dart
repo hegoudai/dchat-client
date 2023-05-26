@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dchat_client/db/prefs.dart';
@@ -8,27 +9,47 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../db/app_database.dart';
+import '../models/message_encrypted.dart';
 
-class ChatList extends ConsumerWidget {
+class Chats extends ConsumerStatefulWidget {
+  const Chats({super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _ChatsState();
+}
+
+class _ChatsState extends ConsumerState<Chats> {
   final _serverController = TextEditingController();
   final _userInfoController = TextEditingController();
   final _newChatController = TextEditingController();
-
-  /// Constructs a [ChatListWithAppBar] widget.
-  ChatList({super.key});
+  WebSocketChannel? _channel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // try to connect websocket
-    ref.watch(wsMessageHandler);
-    Timer.periodic(const Duration(seconds: 5), (timer) {
-      // try to reconnect ws every five seconds
+  void initState() {
+    super.initState();
+    Timer.periodic(const Duration(seconds: 10), (timer) {
+      // try to reconnect ws every ten seconds
       if (!ref.watch(wsStateProvider)) {
-        ref.invalidate(wsMessageHandler);
+        ref.invalidate(wsChannelProvider);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _channel?.sink.close();
+    _newChatController.dispose();
+    _serverController.dispose();
+    _userInfoController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _handleWSMessage();
     return Scaffold(
         appBar: AppBar(
           title: const Text("Conversations"),
@@ -181,6 +202,50 @@ class ChatList extends ConsumerWidget {
                 ),
           ],
         ));
+  }
+
+  void _handleWSMessage() {
+    ref.watch(wsChannelProvider).when(
+        loading: () {},
+        error: (error, stackTrace) {
+          log('Error while build websocket channel: $error');
+          Future(() => ref.read(wsStateProvider.notifier).state = false);
+        },
+        data: (value) {
+          if (value == _channel) {
+            return;
+          }
+
+          _channel = value;
+          _channel?.ready
+              .then((_) => ref.read(wsStateProvider.notifier).state = true);
+          _channel?.stream.listen((event) {
+            final value = event.toString();
+            log('received value: $value');
+            // write message to db
+            final encryptedMessage =
+                EncryptedMessage.fromJson(jsonDecode(value));
+            final database = ref.watch(AppDatabase.provider);
+
+            final chat = Chat(
+                pub: encryptedMessage.fromPub,
+                authority: encryptedMessage.authority);
+
+            var myAddressInfos = ref.watch(myInfosProvider);
+
+            database
+                .into(database.chats)
+                .insert(chat, mode: InsertMode.insertOrReplace);
+            database
+                .into(database.messages)
+                .insert(encryptedMessage.toMessage(myAddressInfos.ecPriv));
+          }, onError: (e) {
+            log('error while listening ws: $e');
+          }, onDone: () {
+            log('ws done');
+            Future(() => ref.read(wsStateProvider.notifier).state = false);
+          });
+        });
   }
 }
 
