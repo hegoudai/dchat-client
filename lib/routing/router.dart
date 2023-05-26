@@ -23,7 +23,7 @@ final deepLinkProvider = StreamProvider<Uri?>((ref) {
 });
 
 final routerProvider = Provider<GoRouter>((ref) {
-  String? handledUri;
+  var isDlHandled = false;
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/chats',
@@ -33,11 +33,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (dlUri == null) {
         return null;
       }
-      if (dlUri.toString() == handledUri) {
+      if (isDlHandled) {
         return null;
       }
       // handle dlUri
-      handledUri = dlUri.toString();
+      isDlHandled = true;
       final db = ref.watch(AppDatabase.provider);
       db.into(db.chats).insert(ChatsCompanion.insert(
           pub: dlUri.pathSegments[0], authority: dlUri.authority));
