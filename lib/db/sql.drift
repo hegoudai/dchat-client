@@ -1,9 +1,6 @@
 import 'tables.dart';
 
-CREATE INDEX chats_pub ON chats(pub);
-
 CREATE INDEX messages_index ON messages(from_pub, to_pub);
-
 
 deleteChat(REQUIRED :pub AS TEXT):
 delete from chats where pub = :pub;
@@ -12,4 +9,4 @@ deleteMessages(REQUIRED :chatPub as TEXT, REQUIRED :myPub as TEXT):
 delete from messages where (from_pub = :chatPub and to_pub = :myPub) or (from_pub = :myPub and to_pub = :chatPub);
 
 selectMessages(REQUIRED :chatPub as TEXT, REQUIRED :myPub as TEXT):
-select * from messages where (from_pub = :chatPub and to_pub = :myPub) or (from_pub = :myPub and to_pub = :chatPub) order by create_date desc;
+select * from messages where (from_pub = :chatPub and to_pub = :myPub) or (from_pub = :myPub and to_pub = :chatPub) order by id desc;

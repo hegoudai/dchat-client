@@ -11,6 +11,7 @@ class Chats extends Table {
 
 @DataClassName('Message')
 class Messages extends Table {
+  IntColumn get id => integer().nullable().autoIncrement()();
   TextColumn get content => text()();
   DateTimeColumn get createDate => dateTime().nullable()();
   TextColumn get fromPub => text()();
