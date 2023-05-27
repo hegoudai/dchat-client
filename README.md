@@ -1,4 +1,4 @@
-# dchat_client
+# dchat-client
 A decentralized multiplatform (only web and android tested) chat client using ECDH to transfer message. It is a project inspired by blockchain. As we know, we share our blockchain address on the internet, others can transfer decentralized coin through the address. Likewise, in this project, you share your uri on the internet, people can talk to you safely and anonymously through the uri.
 ## Usage
 Here is a web-client for test: http://47.106.144.145:8080/
