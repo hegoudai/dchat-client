@@ -41,11 +41,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       final db = ref.watch(AppDatabase.provider);
       db.into(db.chats).insert(ChatsCompanion.insert(
           pub: dlUri.pathSegments[0], authority: dlUri.authority));
-      return '/chats/${dlUri.pathSegments[0]}?authority=${dlUri.authority}';
+      return '/${dlUri.pathSegments[0]}?authority=${dlUri.authority}';
     },
     routes: <RouteBase>[
       GoRoute(
-        path: '/chats',
+        path: '/',
         builder: (context, state) => const Chats(),
         routes: <RouteBase>[
           GoRoute(

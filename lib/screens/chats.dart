@@ -259,8 +259,7 @@ class ChatCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
-        GoRouter.of(context)
-            .push('/chats/${chat.pub}?authority=${chat.authority}');
+        GoRouter.of(context).push('/${chat.pub}?authority=${chat.authority}');
       },
       child: Card(
         child: Padding(
