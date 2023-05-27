@@ -30,6 +30,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     if (_controller.text.isNotEmpty) {
       final database = ref.watch(AppDatabase.provider);
       final message = Message(
+          createDate: DateTime.now(),
           content: _controller.text,
           toPub: widget.chat.pub,
           fromPub: ref.watch(myInfosProvider).ecPubString);
@@ -56,6 +57,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 80.0),
             child: ListView.builder(
+                reverse: true,
                 itemCount: data.length,
                 itemBuilder: (context, index) {
                   return Container(
@@ -63,8 +65,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                         left: 14, right: 14, top: 10, bottom: 10),
                     child: Align(
                       alignment: (data[index].toPub != widget.chat.pub
-                          ? Alignment.topLeft
-                          : Alignment.topRight),
+                          ? Alignment.bottomLeft
+                          : Alignment.bottomRight),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),

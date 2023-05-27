@@ -3,6 +3,188 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
+class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChatsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _pubMeta = const VerificationMeta('pub');
+  @override
+  late final GeneratedColumn<String> pub = GeneratedColumn<String>(
+      'pub', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _authorityMeta =
+      const VerificationMeta('authority');
+  @override
+  late final GeneratedColumn<String> authority = GeneratedColumn<String>(
+      'authority', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [pub, authority];
+  @override
+  String get aliasedName => _alias ?? 'chats';
+  @override
+  String get actualTableName => 'chats';
+  @override
+  VerificationContext validateIntegrity(Insertable<Chat> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('pub')) {
+      context.handle(
+          _pubMeta, pub.isAcceptableOrUnknown(data['pub']!, _pubMeta));
+    } else if (isInserting) {
+      context.missing(_pubMeta);
+    }
+    if (data.containsKey('authority')) {
+      context.handle(_authorityMeta,
+          authority.isAcceptableOrUnknown(data['authority']!, _authorityMeta));
+    } else if (isInserting) {
+      context.missing(_authorityMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {pub};
+  @override
+  Chat map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Chat(
+      pub: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}pub'])!,
+      authority: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}authority'])!,
+    );
+  }
+
+  @override
+  $ChatsTable createAlias(String alias) {
+    return $ChatsTable(attachedDatabase, alias);
+  }
+}
+
+class Chat extends DataClass implements Insertable<Chat> {
+  final String pub;
+  final String authority;
+  const Chat({required this.pub, required this.authority});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['pub'] = Variable<String>(pub);
+    map['authority'] = Variable<String>(authority);
+    return map;
+  }
+
+  ChatsCompanion toCompanion(bool nullToAbsent) {
+    return ChatsCompanion(
+      pub: Value(pub),
+      authority: Value(authority),
+    );
+  }
+
+  factory Chat.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Chat(
+      pub: serializer.fromJson<String>(json['pub']),
+      authority: serializer.fromJson<String>(json['authority']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'pub': serializer.toJson<String>(pub),
+      'authority': serializer.toJson<String>(authority),
+    };
+  }
+
+  Chat copyWith({String? pub, String? authority}) => Chat(
+        pub: pub ?? this.pub,
+        authority: authority ?? this.authority,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Chat(')
+          ..write('pub: $pub, ')
+          ..write('authority: $authority')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(pub, authority);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Chat &&
+          other.pub == this.pub &&
+          other.authority == this.authority);
+}
+
+class ChatsCompanion extends UpdateCompanion<Chat> {
+  final Value<String> pub;
+  final Value<String> authority;
+  final Value<int> rowid;
+  const ChatsCompanion({
+    this.pub = const Value.absent(),
+    this.authority = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ChatsCompanion.insert({
+    required String pub,
+    required String authority,
+    this.rowid = const Value.absent(),
+  })  : pub = Value(pub),
+        authority = Value(authority);
+  static Insertable<Chat> custom({
+    Expression<String>? pub,
+    Expression<String>? authority,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (pub != null) 'pub': pub,
+      if (authority != null) 'authority': authority,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ChatsCompanion copyWith(
+      {Value<String>? pub, Value<String>? authority, Value<int>? rowid}) {
+    return ChatsCompanion(
+      pub: pub ?? this.pub,
+      authority: authority ?? this.authority,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (pub.present) {
+      map['pub'] = Variable<String>(pub.value);
+    }
+    if (authority.present) {
+      map['authority'] = Variable<String>(authority.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatsCompanion(')
+          ..write('pub: $pub, ')
+          ..write('authority: $authority, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -267,195 +449,48 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   }
 }
 
-class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $ChatsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _pubMeta = const VerificationMeta('pub');
-  @override
-  late final GeneratedColumn<String> pub = GeneratedColumn<String>(
-      'pub', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _authorityMeta =
-      const VerificationMeta('authority');
-  @override
-  late final GeneratedColumn<String> authority = GeneratedColumn<String>(
-      'authority', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [pub, authority];
-  @override
-  String get aliasedName => _alias ?? 'chats';
-  @override
-  String get actualTableName => 'chats';
-  @override
-  VerificationContext validateIntegrity(Insertable<Chat> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('pub')) {
-      context.handle(
-          _pubMeta, pub.isAcceptableOrUnknown(data['pub']!, _pubMeta));
-    } else if (isInserting) {
-      context.missing(_pubMeta);
-    }
-    if (data.containsKey('authority')) {
-      context.handle(_authorityMeta,
-          authority.isAcceptableOrUnknown(data['authority']!, _authorityMeta));
-    } else if (isInserting) {
-      context.missing(_authorityMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {pub};
-  @override
-  Chat map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Chat(
-      pub: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}pub'])!,
-      authority: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}authority'])!,
-    );
-  }
-
-  @override
-  $ChatsTable createAlias(String alias) {
-    return $ChatsTable(attachedDatabase, alias);
-  }
-}
-
-class Chat extends DataClass implements Insertable<Chat> {
-  final String pub;
-  final String authority;
-  const Chat({required this.pub, required this.authority});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['pub'] = Variable<String>(pub);
-    map['authority'] = Variable<String>(authority);
-    return map;
-  }
-
-  ChatsCompanion toCompanion(bool nullToAbsent) {
-    return ChatsCompanion(
-      pub: Value(pub),
-      authority: Value(authority),
-    );
-  }
-
-  factory Chat.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Chat(
-      pub: serializer.fromJson<String>(json['pub']),
-      authority: serializer.fromJson<String>(json['authority']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'pub': serializer.toJson<String>(pub),
-      'authority': serializer.toJson<String>(authority),
-    };
-  }
-
-  Chat copyWith({String? pub, String? authority}) => Chat(
-        pub: pub ?? this.pub,
-        authority: authority ?? this.authority,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('Chat(')
-          ..write('pub: $pub, ')
-          ..write('authority: $authority')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(pub, authority);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Chat &&
-          other.pub == this.pub &&
-          other.authority == this.authority);
-}
-
-class ChatsCompanion extends UpdateCompanion<Chat> {
-  final Value<String> pub;
-  final Value<String> authority;
-  final Value<int> rowid;
-  const ChatsCompanion({
-    this.pub = const Value.absent(),
-    this.authority = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  ChatsCompanion.insert({
-    required String pub,
-    required String authority,
-    this.rowid = const Value.absent(),
-  })  : pub = Value(pub),
-        authority = Value(authority);
-  static Insertable<Chat> custom({
-    Expression<String>? pub,
-    Expression<String>? authority,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (pub != null) 'pub': pub,
-      if (authority != null) 'authority': authority,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  ChatsCompanion copyWith(
-      {Value<String>? pub, Value<String>? authority, Value<int>? rowid}) {
-    return ChatsCompanion(
-      pub: pub ?? this.pub,
-      authority: authority ?? this.authority,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (pub.present) {
-      map['pub'] = Variable<String>(pub.value);
-    }
-    if (authority.present) {
-      map['authority'] = Variable<String>(authority.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('ChatsCompanion(')
-          ..write('pub: $pub, ')
-          ..write('authority: $authority, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
-  late final $MessagesTable messages = $MessagesTable(this);
   late final $ChatsTable chats = $ChatsTable(this);
+  late final Index chatsPub =
+      Index('chats_pub', 'CREATE INDEX chats_pub ON chats (pub)');
+  late final $MessagesTable messages = $MessagesTable(this);
+  late final Index messagesIndex = Index('messages_index',
+      'CREATE INDEX messages_index ON messages (from_pub, to_pub)');
+  Future<int> deleteChat(String pub) {
+    return customUpdate(
+      'DELETE FROM chats WHERE pub = ?1',
+      variables: [Variable<String>(pub)],
+      updates: {chats},
+      updateKind: UpdateKind.delete,
+    );
+  }
+
+  Future<int> deleteMessages(String chatPub, String myPub) {
+    return customUpdate(
+      'DELETE FROM messages WHERE(from_pub = ?1 AND to_pub = ?2)OR(from_pub = ?2 AND to_pub = ?1)',
+      variables: [Variable<String>(chatPub), Variable<String>(myPub)],
+      updates: {messages},
+      updateKind: UpdateKind.delete,
+    );
+  }
+
+  Selectable<Message> selectMessages(String chatPub, String myPub) {
+    return customSelect(
+        'SELECT * FROM messages WHERE(from_pub = ?1 AND to_pub = ?2)OR(from_pub = ?2 AND to_pub = ?1)ORDER BY create_date DESC',
+        variables: [
+          Variable<String>(chatPub),
+          Variable<String>(myPub)
+        ],
+        readsFrom: {
+          messages,
+        }).asyncMap(messages.mapFromRow);
+  }
+
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [messages, chats];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [chats, chatsPub, messages, messagesIndex];
 }

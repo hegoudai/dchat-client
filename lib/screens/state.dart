@@ -1,7 +1,6 @@
 import 'package:basic_utils/basic_utils.dart';
 import 'package:dchat_client/db/prefs.dart';
 import 'package:dchat_client/models/dchat_user.dart';
-import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../db/app_database.dart';
@@ -15,11 +14,8 @@ final messagesProvider =
     StreamProvider.family.autoDispose<List<Message>, String>((ref, pub) {
   final database = ref.watch(AppDatabase.provider);
   final myPub = ref.watch(myInfosProvider).ecPubString;
-  return (database.select(database.messages)
-        ..where((tbl) =>
-            (tbl.fromPub.equals(pub) & tbl.toPub.equals(myPub)) |
-            (tbl.fromPub.equals(myPub) & tbl.toPub.equals(pub))))
-      .watch();
+  // todo page query
+  return database.selectMessages(pub, myPub).watch();
 });
 
 final myAuthorityProvider = Provider<String?>((ref) {

@@ -6,7 +6,7 @@ import 'connection/connection.dart' as impl;
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Messages, Chats])
+@DriftDatabase(tables: [Messages, Chats], include: {'sql.drift'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(impl.connect());
 
@@ -32,4 +32,12 @@ class AppDatabase extends _$AppDatabase {
 
     return database;
   });
+
+  Future<void> deleteChatAndMessages(String chatPub, String myPub) {
+    return transaction(() async {
+      await deleteChat(chatPub);
+
+      await deleteMessages(chatPub, myPub);
+    });
+  }
 }

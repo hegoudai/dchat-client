@@ -32,7 +32,8 @@ class _ChatsState extends ConsumerState<Chats> {
     super.initState();
     Timer.periodic(const Duration(seconds: 10), (timer) {
       // try to reconnect ws every ten seconds
-      if (!ref.watch(wsStateProvider)) {
+      if (!ref.watch(wsStateProvider) &
+          (ref.watch(myAuthorityProvider) != null)) {
         ref.invalidate(wsChannelProvider);
       }
     });
@@ -281,9 +282,8 @@ class ChatCard extends ConsumerWidget {
                 color: Colors.red,
                 onPressed: () {
                   final db = ref.watch(AppDatabase.provider);
-                  (db.delete(db.chats)
-                        ..where((tbl) => tbl.pub.equals(chat.pub)))
-                      .go();
+                  final myPub = ref.watch(myInfosProvider).ecPubString;
+                  db.deleteChatAndMessages(chat.pub, myPub);
                 },
               )
             ],

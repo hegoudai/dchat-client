@@ -77,6 +77,10 @@ class EncryptedMessage extends Message {
     var ivBytes = HexUtils.decode(iv);
     var rawContent = utf8.decode(CryptoUtils.removePKCS7Padding(
         aesCbcDecrypt(key, ivBytes, HexUtils.decode(content))));
-    return Message(content: rawContent, fromPub: fromPub, toPub: toPub);
+    return Message(
+        content: rawContent,
+        fromPub: fromPub,
+        toPub: toPub,
+        createDate: DateTime.now());
   }
 }
