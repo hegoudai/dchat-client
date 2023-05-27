@@ -26,7 +26,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   var isDlHandled = false;
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/chats',
+    initialLocation: '/',
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final dlUri = ref.watch(deepLinkProvider).value;
