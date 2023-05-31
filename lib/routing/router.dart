@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dchat_client/db/app_database.dart';
 import 'package:dchat_client/screens/chat_detail.dart';
 import 'package:dchat_client/screens/chats.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,8 +40,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // handle dlUri
       isDlHandled = true;
       final db = ref.watch(AppDatabase.provider);
-      db.into(db.chats).insert(ChatsCompanion.insert(
-          pub: dlUri.pathSegments[0], authority: dlUri.authority));
+      db.into(db.chats).insert(
+          ChatsCompanion.insert(
+              pub: dlUri.pathSegments[0], authority: dlUri.authority),
+          mode: InsertMode.insertOrIgnore);
       return '/${dlUri.pathSegments[0]}?authority=${dlUri.authority}';
     },
     routes: <RouteBase>[

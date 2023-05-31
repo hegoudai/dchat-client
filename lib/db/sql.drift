@@ -1,12 +1,27 @@
 import 'tables.dart';
 
+CREATE UNIQUE INDEX chats_index ON chats(pub);
+
 CREATE INDEX messages_index ON messages(from_pub, to_pub);
 
+-- chats repo
 deleteChat(REQUIRED :pub AS TEXT):
-delete from chats where pub = :pub;
+DELETE FROM chats WHERE pub = :pub;
 
+insertOrReplaceChat(REQUIRED :pub AS TEXT, REQUIRED :authority AS TEXT, :newestMessage as TEXT):
+REPLACE INTO chats(pub, authority, newest_message, unread_count) 
+VALUES(:pub, :authority, :newestMessage, 
+COALESCE(
+    (SELECT unread_count + 1 FROM chats WHERE pub = :pub), 0)
+);
+
+readChat(REQUIRED :pub AS TEXT):
+UPDATE chats SET unread_count = 0 WHERE pub = :pub;
+
+
+-- messages repo
 deleteMessages(REQUIRED :chatPub as TEXT, REQUIRED :myPub as TEXT):
-delete from messages where (from_pub = :chatPub and to_pub = :myPub) or (from_pub = :myPub and to_pub = :chatPub);
+DELETE FROM messages WHERE (from_pub = :chatPub AND to_pub = :myPub) OR (from_pub = :myPub AND to_pub = :chatPub);
 
 selectMessages(REQUIRED :chatPub as TEXT, REQUIRED :myPub as TEXT):
-select * from messages where (from_pub = :chatPub and to_pub = :myPub) or (from_pub = :myPub and to_pub = :chatPub) order by id desc;
+SELECT * FROM messages WHERE (from_pub = :chatPub AND to_pub = :myPub) OR (from_pub = :myPub AND to_pub = :chatPub) ORDER BY id DESC;

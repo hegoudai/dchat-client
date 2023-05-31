@@ -51,6 +51,13 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.0
   flutter_launcher_icons: "^0.13.1"
+  # We use this to compile the shared web worker for the web database. This dependency
+  # isn't required for most apps. You only need it if you want to target the web, use
+  # web workers for drift AND want to compile those web workers through `build_runner`.
+  # Either way, using this package with Flutter requires a delicate setup described in
+  # `build.yaml`.
+  build_web_compilers: ^3.2.2
+  build: ^2.2.1
 
 flutter:
   uses-material-design: true

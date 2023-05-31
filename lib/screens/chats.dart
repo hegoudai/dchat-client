@@ -83,7 +83,7 @@ class _ChatsState extends ConsumerState<Chats> {
                                         ChatsCompanion.insert(
                                             pub: uri.pathSegments[0],
                                             authority: uri.authority),
-                                        mode: InsertMode.insertOrReplace);
+                                        mode: InsertMode.insertOrIgnore);
                                   }
                                 }
                                 Navigator.pop(context);
@@ -228,18 +228,11 @@ class _ChatsState extends ConsumerState<Chats> {
                 EncryptedMessage.fromJson(jsonDecode(value));
             final database = ref.watch(AppDatabase.provider);
 
-            final chat = Chat(
-                pub: encryptedMessage.fromPub,
-                authority: encryptedMessage.authority);
-
             var myAddressInfos = ref.watch(myInfosProvider);
-
-            database
-                .into(database.chats)
-                .insert(chat, mode: InsertMode.insertOrReplace);
-            database
-                .into(database.messages)
-                .insert(encryptedMessage.toMessage(myAddressInfos.ecPriv));
+            var message = encryptedMessage.toMessage(myAddressInfos.ecPriv);
+            database.insertOrReplaceChat(encryptedMessage.fromPub,
+                encryptedMessage.authority, message.content);
+            database.into(database.messages).insert(message);
           }, onError: (e) {
             log('error while listening ws: $e');
           }, onDone: () {
@@ -259,6 +252,7 @@ class ChatCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
+        ref.watch(AppDatabase.provider).readChat(chat.pub);
         GoRouter.of(context).push('/${chat.pub}?authority=${chat.authority}');
       },
       child: Card(
@@ -268,11 +262,28 @@ class ChatCard extends ConsumerWidget {
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               Expanded(
-                child: Column(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(chat.authority),
+                    Visibility(
+                      visible: chat.unreadCount != 0,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: 15,
+                          height: 15,
+                          decoration: const BoxDecoration(
+                              shape: BoxShape.circle, color: Colors.red),
+                          child: Text(
+                            chat.unreadCount.toString(),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    )
                   ],
                 ),
               ),
