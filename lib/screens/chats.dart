@@ -106,7 +106,7 @@ class _ChatsState extends ConsumerState<Chats> {
                         _serverController.text =
                             '${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
                         _userInfoController.text = uri.userInfo;
-                      } else {}
+                      }
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         showDialog(
                           context: context,

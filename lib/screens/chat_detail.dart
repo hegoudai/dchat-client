@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dchat_client/models/message_encrypted.dart';
 import 'package:dchat_client/screens/state.dart';
 import 'package:dchat_client/web/api.dart';
@@ -25,13 +27,15 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     super.dispose();
   }
 
-  void _addToMessages() {
+  void _addToMessages() async {
     // todo check server config first
-    if (_controller.text.isNotEmpty) {
+    final content = _controller.text;
+    _controller.clear();
+    if (content.isNotEmpty) {
       final database = ref.watch(AppDatabase.provider);
       final message = Message(
           createDate: DateTime.now(),
-          content: _controller.text,
+          content: content,
           toPub: widget.chat.pub,
           fromPub: ref.watch(myInfosProvider).ecPubString);
       database.messages.insertOne(message);
@@ -39,10 +43,36 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
       var myAddressInfos = ref.watch(myInfosProvider);
 
       // send message to server
-      ref.watch(apiServicesProvider)?.send(widget.chat.authority,
-          EncryptedMessage.fromMessage(message, myAddressInfos));
+      try {
+        var resp = await ref.watch(apiServicesProvider)?.send(
+            widget.chat.authority,
+            EncryptedMessage.fromMessage(message, myAddressInfos));
+        switch (resp?.statusCode) {
+          case HttpStatus.ok:
+            // message sent, do nothing
+            break;
+          case HttpStatus.accepted:
+            _showToast('Message sent, but user is offline');
+            break;
+          default:
+            _showToast('Unkown status code: ${resp?.statusCode}');
+            break;
+        }
+      } on Exception {
+        _showToast('Unable to access ${widget.chat.authority} server');
+      }
     }
-    _controller.clear();
+  }
+
+  void _showToast(String message) {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
