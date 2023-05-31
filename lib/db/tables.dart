@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 class Chats extends Table with AutoIncrementingPrimaryKey {
   TextColumn get pub => text()();
   TextColumn get authority => text()();
+  TextColumn get remark => text().nullable()();
   TextColumn get newestMessage => text().nullable()();
   IntColumn get unreadCount =>
       integer().nullable().withDefault(const Constant(0))();

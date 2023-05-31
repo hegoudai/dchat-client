@@ -2,17 +2,18 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:dchat_client/db/prefs.dart';
+import 'package:dchat_client/screens/chats/my_uri_dialog.dart';
+import 'package:dchat_client/screens/chats/new_chat_dialog.dart';
+import 'package:dchat_client/screens/chats/user_config_dialog.dart';
 import 'package:dchat_client/screens/state.dart';
 import 'package:dchat_client/web/websocket.dart';
-import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../db/app_database.dart';
 import '../models/message_encrypted.dart';
+import 'chats/chat_card.dart';
 
 class Chats extends ConsumerStatefulWidget {
   const Chats({super.key});
@@ -22,9 +23,6 @@ class Chats extends ConsumerStatefulWidget {
 }
 
 class _ChatsState extends ConsumerState<Chats> {
-  final _serverController = TextEditingController();
-  final _userInfoController = TextEditingController();
-  final _newChatController = TextEditingController();
   WebSocketChannel? _channel;
 
   @override
@@ -43,9 +41,15 @@ class _ChatsState extends ConsumerState<Chats> {
   void dispose() {
     super.dispose();
     _channel?.sink.close();
-    _newChatController.dispose();
-    _serverController.dispose();
-    _userInfoController.dispose();
+  }
+
+  void _showDialog(Widget widget) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => widget,
+      );
+    });
   }
 
   @override
@@ -60,106 +64,18 @@ class _ChatsState extends ConsumerState<Chats> {
                 PopupMenuItem(
                   child: const Text('New Chat'),
                   onTap: () {
-                    _newChatController.text = '';
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text('New Chat'),
-                          content: TextField(
-                            decoration:
-                                const InputDecoration(labelText: 'DCUri'),
-                            controller: _newChatController,
-                          ),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () {
-                                if (_newChatController.text.isNotEmpty) {
-                                  var uri =
-                                      Uri.tryParse(_newChatController.text);
-                                  if ((uri != null) & uri!.isScheme('dc')) {
-                                    final db = ref.watch(AppDatabase.provider);
-                                    db.into(db.chats).insert(
-                                        ChatsCompanion.insert(
-                                            pub: uri.pathSegments[0],
-                                            authority: uri.authority),
-                                        mode: InsertMode.insertOrIgnore);
-                                  }
-                                }
-                                Navigator.pop(context);
-                                // todo route to chat detail
-                              },
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                    });
+                    _showDialog(const NewChatDialog());
                   },
                 ),
                 PopupMenuItem(
                     child: const Text('User Config'),
                     onTap: () {
-                      final user = ref.watch(myInfosProvider);
-                      final uri = Uri.tryParse(user.uriString);
-                      if (uri != null) {
-                        _serverController.text =
-                            '${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
-                        _userInfoController.text = uri.userInfo;
-                      }
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                            title: const Text('User Config'),
-                            content: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                TextField(
-                                  decoration:
-                                      const InputDecoration(labelText: 'Sever'),
-                                  controller: _serverController,
-                                ),
-                                TextField(
-                                  decoration: const InputDecoration(
-                                      labelText: 'UserInfo'),
-                                  controller: _userInfoController,
-                                ),
-                              ],
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  if (_serverController.text.isNotEmpty) {
-                                    var authority =
-                                        '${_userInfoController.text}@${_serverController.text}';
-                                    ref
-                                        .watch(prefsProvider)
-                                        .setString('authority', authority);
-                                    ref.invalidate(myAuthorityProvider);
-                                  }
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
-                        );
-                      });
+                      _showDialog(const UserConfigDialog());
                     }),
                 PopupMenuItem(
                   child: const Text('My URI'),
                   onTap: () {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) =>
-                              SimpleDialog(children: [
-                                SelectableText(
-                                    ref.watch(myInfosProvider).uriString),
-                              ]));
-                    });
+                    _showDialog(const MyURIDialog());
                   },
                 )
               ],
@@ -240,66 +156,5 @@ class _ChatsState extends ConsumerState<Chats> {
             Future(() => ref.read(wsStateProvider.notifier).state = false);
           });
         });
-  }
-}
-
-class ChatCard extends ConsumerWidget {
-  final Chat chat;
-
-  ChatCard(this.chat) : super(key: ObjectKey(chat.pub));
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: () {
-        ref.watch(AppDatabase.provider).readChat(chat.pub);
-        GoRouter.of(context).push('/${chat.pub}?authority=${chat.authority}');
-      },
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(chat.authority),
-                    Visibility(
-                      visible: chat.unreadCount != 0,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Container(
-                          alignment: Alignment.center,
-                          width: 15,
-                          height: 15,
-                          decoration: const BoxDecoration(
-                              shape: BoxShape.circle, color: Colors.red),
-                          child: Text(
-                            chat.unreadCount.toString(),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete),
-                color: Colors.red,
-                onPressed: () {
-                  final db = ref.watch(AppDatabase.provider);
-                  final myPub = ref.watch(myInfosProvider).ecPubString;
-                  db.deleteChatAndMessages(chat.pub, myPub);
-                },
-              )
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

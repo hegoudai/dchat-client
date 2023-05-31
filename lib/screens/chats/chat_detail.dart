@@ -7,7 +7,7 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../db/app_database.dart';
+import '../../db/app_database.dart';
 
 class ChatDetail extends ConsumerStatefulWidget {
   const ChatDetail({required this.chat, super.key});

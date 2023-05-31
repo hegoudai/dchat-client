@@ -28,6 +28,11 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
   late final GeneratedColumn<String> authority = GeneratedColumn<String>(
       'authority', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _remarkMeta = const VerificationMeta('remark');
+  @override
+  late final GeneratedColumn<String> remark = GeneratedColumn<String>(
+      'remark', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _newestMessageMeta =
       const VerificationMeta('newestMessage');
   @override
@@ -44,7 +49,7 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
       defaultValue: const Constant(0));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, pub, authority, newestMessage, unreadCount];
+      [id, pub, authority, remark, newestMessage, unreadCount];
   @override
   String get aliasedName => _alias ?? 'chats';
   @override
@@ -68,6 +73,10 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
           authority.isAcceptableOrUnknown(data['authority']!, _authorityMeta));
     } else if (isInserting) {
       context.missing(_authorityMeta);
+    }
+    if (data.containsKey('remark')) {
+      context.handle(_remarkMeta,
+          remark.isAcceptableOrUnknown(data['remark']!, _remarkMeta));
     }
     if (data.containsKey('newest_message')) {
       context.handle(
@@ -96,6 +105,8 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
           .read(DriftSqlType.string, data['${effectivePrefix}pub'])!,
       authority: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}authority'])!,
+      remark: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}remark']),
       newestMessage: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}newest_message']),
       unreadCount: attachedDatabase.typeMapping
@@ -113,12 +124,14 @@ class Chat extends DataClass implements Insertable<Chat> {
   final int? id;
   final String pub;
   final String authority;
+  final String? remark;
   final String? newestMessage;
   final int? unreadCount;
   const Chat(
       {this.id,
       required this.pub,
       required this.authority,
+      this.remark,
       this.newestMessage,
       this.unreadCount});
   @override
@@ -129,6 +142,9 @@ class Chat extends DataClass implements Insertable<Chat> {
     }
     map['pub'] = Variable<String>(pub);
     map['authority'] = Variable<String>(authority);
+    if (!nullToAbsent || remark != null) {
+      map['remark'] = Variable<String>(remark);
+    }
     if (!nullToAbsent || newestMessage != null) {
       map['newest_message'] = Variable<String>(newestMessage);
     }
@@ -143,6 +159,8 @@ class Chat extends DataClass implements Insertable<Chat> {
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       pub: Value(pub),
       authority: Value(authority),
+      remark:
+          remark == null && nullToAbsent ? const Value.absent() : Value(remark),
       newestMessage: newestMessage == null && nullToAbsent
           ? const Value.absent()
           : Value(newestMessage),
@@ -159,6 +177,7 @@ class Chat extends DataClass implements Insertable<Chat> {
       id: serializer.fromJson<int?>(json['id']),
       pub: serializer.fromJson<String>(json['pub']),
       authority: serializer.fromJson<String>(json['authority']),
+      remark: serializer.fromJson<String?>(json['remark']),
       newestMessage: serializer.fromJson<String?>(json['newestMessage']),
       unreadCount: serializer.fromJson<int?>(json['unreadCount']),
     );
@@ -170,6 +189,7 @@ class Chat extends DataClass implements Insertable<Chat> {
       'id': serializer.toJson<int?>(id),
       'pub': serializer.toJson<String>(pub),
       'authority': serializer.toJson<String>(authority),
+      'remark': serializer.toJson<String?>(remark),
       'newestMessage': serializer.toJson<String?>(newestMessage),
       'unreadCount': serializer.toJson<int?>(unreadCount),
     };
@@ -179,12 +199,14 @@ class Chat extends DataClass implements Insertable<Chat> {
           {Value<int?> id = const Value.absent(),
           String? pub,
           String? authority,
+          Value<String?> remark = const Value.absent(),
           Value<String?> newestMessage = const Value.absent(),
           Value<int?> unreadCount = const Value.absent()}) =>
       Chat(
         id: id.present ? id.value : this.id,
         pub: pub ?? this.pub,
         authority: authority ?? this.authority,
+        remark: remark.present ? remark.value : this.remark,
         newestMessage:
             newestMessage.present ? newestMessage.value : this.newestMessage,
         unreadCount: unreadCount.present ? unreadCount.value : this.unreadCount,
@@ -195,6 +217,7 @@ class Chat extends DataClass implements Insertable<Chat> {
           ..write('id: $id, ')
           ..write('pub: $pub, ')
           ..write('authority: $authority, ')
+          ..write('remark: $remark, ')
           ..write('newestMessage: $newestMessage, ')
           ..write('unreadCount: $unreadCount')
           ..write(')'))
@@ -203,7 +226,7 @@ class Chat extends DataClass implements Insertable<Chat> {
 
   @override
   int get hashCode =>
-      Object.hash(id, pub, authority, newestMessage, unreadCount);
+      Object.hash(id, pub, authority, remark, newestMessage, unreadCount);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -211,6 +234,7 @@ class Chat extends DataClass implements Insertable<Chat> {
           other.id == this.id &&
           other.pub == this.pub &&
           other.authority == this.authority &&
+          other.remark == this.remark &&
           other.newestMessage == this.newestMessage &&
           other.unreadCount == this.unreadCount);
 }
@@ -219,12 +243,14 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
   final Value<int?> id;
   final Value<String> pub;
   final Value<String> authority;
+  final Value<String?> remark;
   final Value<String?> newestMessage;
   final Value<int?> unreadCount;
   const ChatsCompanion({
     this.id = const Value.absent(),
     this.pub = const Value.absent(),
     this.authority = const Value.absent(),
+    this.remark = const Value.absent(),
     this.newestMessage = const Value.absent(),
     this.unreadCount = const Value.absent(),
   });
@@ -232,6 +258,7 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
     this.id = const Value.absent(),
     required String pub,
     required String authority,
+    this.remark = const Value.absent(),
     this.newestMessage = const Value.absent(),
     this.unreadCount = const Value.absent(),
   })  : pub = Value(pub),
@@ -240,6 +267,7 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
     Expression<int>? id,
     Expression<String>? pub,
     Expression<String>? authority,
+    Expression<String>? remark,
     Expression<String>? newestMessage,
     Expression<int>? unreadCount,
   }) {
@@ -247,6 +275,7 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
       if (id != null) 'id': id,
       if (pub != null) 'pub': pub,
       if (authority != null) 'authority': authority,
+      if (remark != null) 'remark': remark,
       if (newestMessage != null) 'newest_message': newestMessage,
       if (unreadCount != null) 'unread_count': unreadCount,
     });
@@ -256,12 +285,14 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
       {Value<int?>? id,
       Value<String>? pub,
       Value<String>? authority,
+      Value<String?>? remark,
       Value<String?>? newestMessage,
       Value<int?>? unreadCount}) {
     return ChatsCompanion(
       id: id ?? this.id,
       pub: pub ?? this.pub,
       authority: authority ?? this.authority,
+      remark: remark ?? this.remark,
       newestMessage: newestMessage ?? this.newestMessage,
       unreadCount: unreadCount ?? this.unreadCount,
     );
@@ -279,6 +310,9 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
     if (authority.present) {
       map['authority'] = Variable<String>(authority.value);
     }
+    if (remark.present) {
+      map['remark'] = Variable<String>(remark.value);
+    }
     if (newestMessage.present) {
       map['newest_message'] = Variable<String>(newestMessage.value);
     }
@@ -294,6 +328,7 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
           ..write('id: $id, ')
           ..write('pub: $pub, ')
           ..write('authority: $authority, ')
+          ..write('remark: $remark, ')
           ..write('newestMessage: $newestMessage, ')
           ..write('unreadCount: $unreadCount')
           ..write(')'))

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dchat_client/db/app_database.dart';
-import 'package:dchat_client/screens/chat_detail.dart';
+import 'package:dchat_client/screens/chats/chat_detail.dart';
 import 'package:dchat_client/screens/chats.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
