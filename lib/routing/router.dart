@@ -39,7 +39,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
       // handle dlUri
       isDlHandled = true;
-      final db = ref.watch(AppDatabase.provider);
+      final db = ref.read(AppDatabase.provider);
       db.into(db.chats).insert(
           ChatsCompanion.insert(
               pub: dlUri.pathSegments[0], authority: dlUri.authority),
@@ -58,7 +58,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               return ChatDetail(
                 chat: Chat(
                     pub: state.pathParameters['pub']!,
-                    authority: state.queryParameters['authority']!),
+                    authority: state.queryParameters['authority']!,
+                    remark: state.queryParameters['remark']),
               );
             },
           ),

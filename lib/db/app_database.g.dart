@@ -647,7 +647,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   Future<int> insertOrReplaceChat(
       String pub, String authority, String newestMessage) {
     return customInsert(
-      'REPLACE INTO chats (pub, authority, newest_message, unread_count) VALUES (?1, ?2, ?3, COALESCE((SELECT unread_count + 1 FROM chats WHERE pub = ?1), 0))',
+      'REPLACE INTO chats (pub, authority, newest_message, unread_count, remark) VALUES (?1, ?2, ?3, COALESCE((SELECT unread_count + 1 FROM chats WHERE pub = ?1), 0), (SELECT remark FROM chats WHERE pub = ?1))',
       variables: [
         Variable<String>(pub),
         Variable<String>(authority),

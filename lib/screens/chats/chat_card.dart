@@ -1,3 +1,4 @@
+import 'package:dchat_client/screens/chats/chat_edit_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,7 +16,8 @@ class ChatCard extends ConsumerWidget {
     return GestureDetector(
       onTap: () {
         ref.watch(AppDatabase.provider).readChat(chat.pub);
-        GoRouter.of(context).push('/${chat.pub}?authority=${chat.authority}');
+        GoRouter.of(context).push(
+            '/${chat.pub}?authority=${chat.authority}&remark=${chat.remark}');
       },
       child: Card(
         child: Padding(
@@ -28,7 +30,7 @@ class ChatCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(chat.authority),
+                    Text(chat.remark ?? chat.authority),
                     Visibility(
                       visible: chat.unreadCount != 0,
                       child: Padding(
@@ -48,6 +50,19 @@ class ChatCard extends ConsumerWidget {
                     )
                   ],
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit),
+                color: Colors.blue,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (ctx) => ChatEditDialog(
+                      chat: chat,
+                    ),
+                  );
+                },
               ),
               IconButton(
                 icon: const Icon(Icons.delete),

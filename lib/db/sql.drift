@@ -9,10 +9,11 @@ deleteChat(REQUIRED :pub AS TEXT):
 DELETE FROM chats WHERE pub = :pub;
 
 insertOrReplaceChat(REQUIRED :pub AS TEXT, REQUIRED :authority AS TEXT, :newestMessage as TEXT):
-REPLACE INTO chats(pub, authority, newest_message, unread_count) 
+REPLACE INTO chats(pub, authority, newest_message, unread_count, remark) 
 VALUES(:pub, :authority, :newestMessage, 
 COALESCE(
-    (SELECT unread_count + 1 FROM chats WHERE pub = :pub), 0)
+    (SELECT unread_count + 1 FROM chats WHERE pub = :pub), 0),
+(SELECT remark FROM chats WHERE pub = :pub)
 );
 
 readChat(REQUIRED :pub AS TEXT):

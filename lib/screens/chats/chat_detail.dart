@@ -80,7 +80,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     final messages = ref.watch(messagesProvider(widget.chat.pub));
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.chat.authority),
+        title: Text(widget.chat.remark ?? widget.chat.authority),
       ),
       body: messages.when(
         data: (data) {
