@@ -17,7 +17,7 @@ class ChatCard extends ConsumerWidget {
       onTap: () {
         ref.watch(AppDatabase.provider).readChat(chat.pub);
         GoRouter.of(context).push(
-            '/${chat.pub}?authority=${chat.authority}&remark=${chat.remark}');
+            '/${chat.pub}?authority=${chat.authority}${chat.remark == null ? '' : '&remark=${chat.remark}'}');
       },
       child: Card(
         child: Padding(
