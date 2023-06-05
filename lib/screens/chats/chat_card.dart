@@ -15,7 +15,6 @@ class ChatCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
-        ref.watch(AppDatabase.provider).readChat(chat.pub);
         GoRouter.of(context).push(
             '/${chat.pub}?authority=${chat.authority}${chat.remark == null ? '' : '&remark=${chat.remark}'}');
       },

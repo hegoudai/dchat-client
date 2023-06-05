@@ -23,6 +23,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
 
   @override
   void dispose() {
+    ref.watch(AppDatabase.provider).readChat(widget.chat.pub);
     _controller.dispose();
     super.dispose();
   }

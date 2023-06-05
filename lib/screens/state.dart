@@ -42,6 +42,3 @@ final myInfosProvider = Provider<DChatUser>((ref) {
         pair.publicKey as ECPublicKey);
   }
 });
-
-// websocket connect state
-final wsStateProvider = StateProvider<bool>((_) => true);
