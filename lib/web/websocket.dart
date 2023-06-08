@@ -8,10 +8,14 @@ class WebSocketManager extends StateNotifier<bool> {
   final List<String> _buffer = [];
   ApiServices? _apiServices;
 
+  bool get _isConnected => state;
+
+  set _isConnected(bool value) => state = value;
+
   WebSocketManager(super.state);
 
   Future<void> send(String message) async {
-    if (_webSocket != null && state) {
+    if (_webSocket != null && _isConnected) {
       _webSocket!.sink.add(message);
     } else {
       throw 'The WebSocketManager is trying to send a message, but the connection is not open.';
@@ -19,7 +23,7 @@ class WebSocketManager extends StateNotifier<bool> {
   }
 
   Future<void> openWebSocketConnection(ApiServices apiServices) async {
-    if (state) {
+    if (_isConnected) {
       return;
     }
     _apiServices = apiServices;
@@ -27,25 +31,25 @@ class WebSocketManager extends StateNotifier<bool> {
     try {
       _webSocket = WebSocketChannel.connect(
           Uri.parse('ws://${apiServices.user.authority}/chat?token=$token'));
-      _webSocket?.ready.then((value) => state = true);
+      _webSocket?.ready.then((value) => _isConnected = true);
       _webSocket!.stream.listen(
         (data) {
           _buffer.add(data);
         },
         onDone: () {
-          state = false;
+          _isConnected = false;
         },
         onError: (error) {
-          state = false;
+          _isConnected = false;
         },
       );
     } catch (e) {
-      state = false;
+      _isConnected = false;
     }
   }
 
   void reConnect() {
-    if (_apiServices == null || state) {
+    if (_apiServices == null || _isConnected) {
       return;
     }
     openWebSocketConnection(_apiServices!);
@@ -53,11 +57,11 @@ class WebSocketManager extends StateNotifier<bool> {
 
   void closeWebSocketConnection() {
     _webSocket?.sink.close();
-    state = false;
+    _isConnected = false;
   }
 
   List<String> fetchData() {
-    if (!state) {
+    if (!_isConnected) {
       // try reconnect if not connected
       reConnect();
       return [];

@@ -29,7 +29,7 @@ class ApiServices {
     // opt derive by ecPub
     var otp = OTP.generateTOTPCodeString(
         user.ecPubString, DateTime.now().millisecondsSinceEpoch,
-        interval: 5);
+        interval: 22);
     // sign opt for server to validate
     var otpSign = CryptoUtils.ecSignatureToBase64(
         CryptoUtils.ecSign(user.ecPriv, Uint8List.fromList(otp.codeUnits)));
