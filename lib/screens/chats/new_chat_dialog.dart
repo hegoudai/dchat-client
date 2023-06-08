@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../db/app_database.dart';
 
@@ -36,18 +37,21 @@ class _NewChatDialogState extends ConsumerState<NewChatDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () {
+            Chat? chat;
             if (_newChatController.text.isNotEmpty) {
               var uri = Uri.tryParse(_newChatController.text);
-              if ((uri != null) & uri!.isScheme('dc')) {
+              if (uri != null && uri.isScheme('dc')) {
                 final db = ref.watch(AppDatabase.provider);
-                db.into(db.chats).insert(
-                    ChatsCompanion.insert(
-                        pub: uri.pathSegments[0], authority: uri.authority),
-                    mode: InsertMode.insertOrIgnore);
+                chat = Chat(pub: uri.pathSegments[0], authority: uri.authority);
+                db.into(db.chats).insert(chat, mode: InsertMode.insertOrIgnore);
               }
             }
             Navigator.pop(context);
-            // todo route to chat detail
+            if (chat != null) {
+              // jump to chat detail if chat uri is valid
+              GoRouter.of(context)
+                  .push('/${chat.pub}?authority=${chat.authority}');
+            }
           },
           child: const Text('OK'),
         ),

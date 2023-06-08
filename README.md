@@ -8,9 +8,9 @@ Here is a web-client for test: http://47.106.144.145:8080/
 ### My URI
 DChat client use dc uri to locate the user.After you config your user config, you can get your uri by clicking the My URI menu item.
 Here is an example:
-`dc://hegoudai@47.106.144.145/BLKG3QG7ttqf-weQUZh7S8Q-G6u-0OqSPQ11hpve7C7c`
+`dc://hegoudai@47.106.144.145/BN7-lwTfMw09OVweh2-o2LjBAQaO9WinnTmlg1XE3kO8`
 
-Obviously, It simply consits of the custom scheme "dc", the user name "hegoudai", the server "47.106.144.145" and the base64Url-encoded ec publickey point "BLKG3QG7ttqf-weQUZh7S8Q-G6u-0OqSPQ11hpve7C7c"
+Obviously, It simply consits of the custom scheme "dc", the user name "hegoudai", the server "47.106.144.145" and the base64Url-encoded ec publickey point "BN7-lwTfMw09OVweh2-o2LjBAQaO9WinnTmlg1XE3kO8"
 ### New Chat
 You can start a new chat by using this uri in the client, or you can just click the uri and start a safe coversation if this client is installed on your phone(only android tested). 
 ## Contributing

@@ -44,7 +44,6 @@ class EncryptedMessage extends Message {
   // encrypt message
   factory EncryptedMessage.fromMessage(Message message, DChatUser user) {
     var ecPub = ecPubFromBytes(base64Url.decode(message.toPub));
-    // todo extract this to some other place
     var sessionKey =
         (ECDHBasicAgreement()..init(user.ecPriv)).calculateAgreement(ecPub);
     // key derive from ecdh

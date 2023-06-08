@@ -20,6 +20,22 @@ class ChatDetail extends ConsumerStatefulWidget {
 
 class _ChatDetailState extends ConsumerState<ChatDetail> {
   final _controller = TextEditingController();
+  String? _dbRemark;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // try to load remark from db if remark is null
+      if (widget.chat.remark == null) {
+        final db = ref.watch(AppDatabase.provider);
+        final dbChat = await (db.select(db.chats)
+              ..where((tbl) => tbl.pub.equals(widget.chat.pub)))
+            .getSingleOrNull();
+        _dbRemark = dbChat?.remark;
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -81,7 +97,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     final messages = ref.watch(messagesProvider(widget.chat.pub));
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.chat.remark ?? widget.chat.authority),
+        title: Text(widget.chat.remark ?? _dbRemark ?? widget.chat.authority),
       ),
       body: messages.when(
         data: (data) {
