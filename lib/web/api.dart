@@ -54,8 +54,10 @@ class ApiServices {
 
   Future<http.Response> send(String toServer, EncryptedMessage message) async {
     // todo handle response
-    return await http.post(Uri.parse('http://$toServer/message/send'),
-        body: message.toJsonString(), headers: commonHeader);
+    return await http.post(
+        Uri.parse('http://$toServer/users/${message.toPub}/messages'),
+        body: message.toJsonString(),
+        headers: commonHeader);
   }
 }
 
