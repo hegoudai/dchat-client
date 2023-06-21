@@ -6,7 +6,7 @@ Here is a web-client for test: http://47.106.144.145:8080/
 ### User config
  To use this client, a deployed dchat server instance is needed. You can deploy your own server or use the test server: 47.106.144.145.If you are interested in the server, see [server repository](https://github.com/hegoudai/dchat_server).
 ### My URI
-DChat client use dc uri to locate the user.After you config your user config, you can get your uri by clicking the My URI menu item.
+DChat client use dc uri to locate the user.After completing your user config, you can get your uri by clicking the My URI menu item.
 Here is an example:
 `dc://hegoudai@47.106.144.145/BN7-lwTfMw09OVweh2-o2LjBAQaO9WinnTmlg1XE3kO8`
 
